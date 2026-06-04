@@ -57,6 +57,22 @@ Output:
 dist/FFmpeg-0.1.0-arm64.dmg
 ```
 
+## Package Installer
+
+```bash
+scripts/package_pkg.sh
+```
+
+Output:
+
+```text
+dist/FFmpeg-0.1.0-arm64.pkg
+```
+
+The `.pkg` installer places `FFmpeg.app` in `/Applications`.
+
 ## Distribution Note
 
 This MVP package is ad-hoc signed but not Apple notarized. On another Mac, Gatekeeper may require right-clicking the app and choosing Open on first launch. A future public distribution build should use Developer ID signing and Apple notarization.
+
+Apps distributed outside the Mac App Store usually do not show the Launchpad long-press delete `x`. To uninstall, remove `FFmpeg.app` from `/Applications`.

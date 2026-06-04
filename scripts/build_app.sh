@@ -17,6 +17,7 @@ rm -rf "$APP_DIR"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 cp ".build/release/MediaForge" "$MACOS_DIR/MediaForge"
 cp "Resources/Info.plist" "$CONTENTS_DIR/Info.plist"
+cp "Resources/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 chmod +x "$MACOS_DIR/MediaForge"
 
 echo "Built $APP_DIR"

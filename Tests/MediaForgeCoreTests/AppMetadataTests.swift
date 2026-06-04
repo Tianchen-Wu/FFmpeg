@@ -5,4 +5,8 @@ final class AppMetadataTests: XCTestCase {
     func testDisplayNameIsFFmpeg() {
         XCTAssertEqual(AppMetadata.displayName, "FFmpeg")
     }
+
+    func testIconNameMatchesBundleResource() {
+        XCTAssertEqual(AppMetadata.iconName, "AppIcon")
+    }
 }

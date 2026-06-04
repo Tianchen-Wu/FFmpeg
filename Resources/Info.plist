@@ -8,6 +8,10 @@
     <string>local.ffmpeg.mac</string>
     <key>CFBundleName</key>
     <string>FFmpeg</string>
+    <key>CFBundleDisplayName</key>
+    <string>FFmpeg</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

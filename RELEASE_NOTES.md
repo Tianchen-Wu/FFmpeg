@@ -15,9 +15,12 @@ Initial lightweight macOS release.
 - Full FFmpeg log preservation
 - Chinese / English UI switch
 - Apple Silicon DMG packaging script
+- Apple Silicon PKG installer script
+- Custom app icon from the bundled image
 
 ## Known Notes
 
 - Requires Homebrew FFmpeg on the target Mac.
 - This build is ad-hoc signed, not notarized.
 - First launch on another Mac may require right-click Open.
+- Non-App-Store installs generally uninstall from Finder, not Launchpad long-press delete.
