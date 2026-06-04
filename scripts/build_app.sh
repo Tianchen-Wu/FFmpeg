@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_DIR="$ROOT_DIR/build/MediaForge.app"
+CONTENTS_DIR="$APP_DIR/Contents"
+MACOS_DIR="$CONTENTS_DIR/MacOS"
+RESOURCES_DIR="$CONTENTS_DIR/Resources"
+
+cd "$ROOT_DIR"
+mkdir -p "$ROOT_DIR/.build/caches/home" "$ROOT_DIR/.build/caches/clang" "$ROOT_DIR/.build/caches/swiftpm"
+HOME="$ROOT_DIR/.build/caches/home" \
+CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/caches/clang" \
+swift build --disable-sandbox --cache-path "$ROOT_DIR/.build/caches/swiftpm" -c release --product MediaForge
+
+rm -rf "$APP_DIR"
+mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
+cp ".build/release/MediaForge" "$MACOS_DIR/MediaForge"
+cp "Resources/Info.plist" "$CONTENTS_DIR/Info.plist"
+chmod +x "$MACOS_DIR/MediaForge"
+
+echo "Built $APP_DIR"
