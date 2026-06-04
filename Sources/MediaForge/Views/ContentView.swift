@@ -30,7 +30,7 @@ struct ContentView: View {
     private var toolbar: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("MediaForge")
+                Text(AppMetadata.displayName)
                     .font(.title2.weight(.semibold))
                 Text(appState.ffmpegPathSummary)
                     .font(.caption)

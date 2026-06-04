@@ -59,7 +59,25 @@ struct OutputSettingsView: View {
 
             Toggle(appState.text("open_when_done"), isOn: $appState.openOutputDirectoryWhenDone)
 
-            DisclosureGroup(appState.text("advanced_options"), isExpanded: $showAdvanced) {
+            VStack(alignment: .leading, spacing: 10) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.16)) {
+                        showAdvanced.toggle()
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: showAdvanced ? "chevron.down" : "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .frame(width: 12)
+                        Text(appState.text("advanced_options"))
+                            .font(.subheadline.weight(.medium))
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                if showAdvanced {
                 VStack(alignment: .leading, spacing: 10) {
                     TextField(appState.text("audio_bitrate"), text: optionalString($appState.advancedOptions.audioBitrate))
                     HStack {
@@ -86,6 +104,7 @@ struct OutputSettingsView: View {
                     }
                 }
                 .padding(.top, 8)
+                }
             }
 
             Spacer()

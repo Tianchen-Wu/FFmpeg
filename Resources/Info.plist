@@ -5,9 +5,9 @@
     <key>CFBundleExecutable</key>
     <string>MediaForge</string>
     <key>CFBundleIdentifier</key>
-    <string>local.mediaforge.mac</string>
+    <string>local.ffmpeg.mac</string>
     <key>CFBundleName</key>
-    <string>MediaForge</string>
+    <string>FFmpeg</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

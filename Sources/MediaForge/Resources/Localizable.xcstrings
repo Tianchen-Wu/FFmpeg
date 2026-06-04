@@ -1,18 +1,18 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
-    "MediaForge" : {
+    "FFmpeg" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MediaForge"
+            "value" : "FFmpeg"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MediaForge"
+            "value" : "FFmpeg"
           }
         }
       }
