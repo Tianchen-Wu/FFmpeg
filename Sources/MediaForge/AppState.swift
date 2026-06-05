@@ -43,6 +43,8 @@ final class AppState: ObservableObject {
     @Published var currentLogText = ""
     @Published var language: AppLanguage = .system
     @Published var showSettings = false
+    @Published var showRuntimeAssistant = false
+    @Published var runtimeInstallerMessage = ""
     @Published var openOutputDirectoryWhenDone = false
 
     let locator = FFmpegLocator()
@@ -61,7 +63,25 @@ final class AppState: ObservableObject {
 
     var ffmpegPathSummary: String {
         guard let ffmpeg else { return "未检测到 FFmpeg" }
+        guard ffprobe != nil else { return "未检测到 FFprobe" }
         return ffmpeg.path
+    }
+
+    var runtimeStatusSummary: String {
+        switch (ffmpeg, ffprobe) {
+        case (.some(let ffmpeg), .some(let ffprobe)):
+            return "FFmpeg: \(ffmpeg.path)\nFFprobe: \(ffprobe.path)"
+        case (.some(let ffmpeg), .none):
+            return "FFmpeg: \(ffmpeg.path)\nFFprobe: 未检测到"
+        case (.none, .some(let ffprobe)):
+            return "FFmpeg: 未检测到\nFFprobe: \(ffprobe.path)"
+        case (.none, .none):
+            return "未检测到 FFmpeg 和 FFprobe"
+        }
+    }
+
+    var homebrewPathSummary: String {
+        locator.locate(named: "brew")?.path ?? "未检测到 Homebrew"
     }
 
     var availablePresets: [ConversionPreset] {
@@ -77,6 +97,41 @@ final class AppState: ObservableObject {
 
     func toggleLanguage() {
         language = language == .zhHans ? .en : .zhHans
+    }
+
+    func presentRuntimeAssistantIfNeeded() {
+        guard ffmpeg == nil || ffprobe == nil else { return }
+        runtimeInstallerMessage = ""
+        showRuntimeAssistant = true
+    }
+
+    func recheckRuntime() {
+        if ffmpeg != nil, ffprobe != nil {
+            runtimeInstallerMessage = "已检测到 FFmpeg 运行环境"
+            statusMessage = "已检测到 FFmpeg"
+        } else {
+            runtimeInstallerMessage = "仍未检测到完整 FFmpeg 运行环境"
+            statusMessage = "未检测到 FFmpeg。请安装运行环境后重试。"
+        }
+        objectWillChange.send()
+    }
+
+    func installRuntimeWithHomebrew() {
+        do {
+            let scriptURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("Install-FFmpeg-Runtime.command")
+            try RuntimeInstaller.homebrewInstallScript().write(to: scriptURL, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptURL.path)
+            NSWorkspace.shared.open(scriptURL)
+            runtimeInstallerMessage = "已打开终端安装器。安装完成后回到这里点击重新检测。"
+        } catch {
+            runtimeInstallerMessage = "无法创建安装器：\(error.localizedDescription)"
+        }
+    }
+
+    func openHomebrewWebsite() {
+        guard let url = URL(string: "https://brew.sh") else { return }
+        NSWorkspace.shared.open(url)
     }
 
     func text(_ key: String) -> String {
@@ -150,6 +205,7 @@ final class AppState: ObservableObject {
         guard !files.isEmpty, !isConverting else { return }
         guard let ffmpeg else {
             statusMessage = "未检测到 FFmpeg。请安装 FFmpeg 或检查 Homebrew 路径。"
+            presentRuntimeAssistantIfNeeded()
             return
         }
 
@@ -396,7 +452,16 @@ final class AppState: ObservableObject {
         "close": "关闭",
         "failed_tasks": "失败任务",
         "language": "语言",
-        "follow_system": "跟随系统"
+        "follow_system": "跟随系统",
+        "runtime_install": "安装运行环境",
+        "runtime_title": "FFmpeg 运行环境",
+        "runtime_status": "检测结果",
+        "homebrew": "Homebrew",
+        "runtime_missing_hint": "转换需要 FFmpeg 和 FFprobe。可以使用 Homebrew 下载并安装完整运行环境。",
+        "runtime_space_hint": "建议预留至少 1GB 空间；实际常见占用约 350MB 到 700MB，取决于依赖和缓存。",
+        "runtime_install_homebrew": "用 Homebrew 安装",
+        "runtime_open_homebrew": "打开 Homebrew",
+        "runtime_recheck": "重新检测"
     ]
 
     private static let englishStrings: [String: String] = [
@@ -456,6 +521,15 @@ final class AppState: ObservableObject {
         "close": "Close",
         "failed_tasks": "Failed Tasks",
         "language": "Language",
-        "follow_system": "Follow System"
+        "follow_system": "Follow System",
+        "runtime_install": "Install Runtime",
+        "runtime_title": "FFmpeg Runtime",
+        "runtime_status": "Detection",
+        "homebrew": "Homebrew",
+        "runtime_missing_hint": "Conversion needs FFmpeg and FFprobe. Homebrew can download and install the complete runtime.",
+        "runtime_space_hint": "Keep at least 1 GB free. Typical usage is about 350 MB to 700 MB depending on dependencies and cache.",
+        "runtime_install_homebrew": "Install with Homebrew",
+        "runtime_open_homebrew": "Open Homebrew",
+        "runtime_recheck": "Recheck"
     ]
 }

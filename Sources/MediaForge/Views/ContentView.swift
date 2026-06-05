@@ -25,6 +25,13 @@ struct ContentView: View {
             SettingsView()
                 .environmentObject(appState)
         }
+        .sheet(isPresented: $appState.showRuntimeAssistant) {
+            RuntimeAssistantView()
+                .environmentObject(appState)
+        }
+        .onAppear {
+            appState.presentRuntimeAssistantIfNeeded()
+        }
     }
 
     private var toolbar: some View {
@@ -34,7 +41,7 @@ struct ContentView: View {
                     .font(.title2.weight(.semibold))
                 Text(appState.ffmpegPathSummary)
                     .font(.caption)
-                    .foregroundStyle(appState.ffmpeg == nil ? .red : .secondary)
+                    .foregroundStyle(appState.ffmpeg == nil || appState.ffprobe == nil ? .red : .secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
@@ -44,6 +51,18 @@ struct ContentView: View {
             if !appState.failedFiles.isEmpty {
                 Label("\(appState.failedFiles.count)", systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
+            }
+
+            if appState.ffmpeg == nil || appState.ffprobe == nil {
+                Button {
+                    appState.showRuntimeAssistant = true
+                } label: {
+                    Label(appState.text("runtime_install"), systemImage: "arrow.down.circle")
+                }
+                .labelStyle(.titleAndIcon)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .help(appState.text("runtime_install"))
             }
 
             Button {

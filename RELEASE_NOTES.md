@@ -1,3 +1,20 @@
+# FFmpeg 0.1.1
+
+Runtime setup release.
+
+## Added
+
+- Startup detection for missing FFmpeg / FFprobe runtime
+- Runtime assistant sheet when the target Mac has no FFmpeg environment
+- Homebrew Terminal installer for `brew install ffmpeg`
+- Runtime disk space estimate in the app UI
+
+## Notes
+
+- The installer does not silently download executable code. It opens a Terminal installer so the user can see and approve the Homebrew command.
+- Homebrew is still required for the one-click runtime installer. If Homebrew is missing, the app links to `https://brew.sh`.
+- Suggested free disk space is at least 1GB for FFmpeg plus dependencies and cache.
+
 # FFmpeg 0.1.0
 
 Initial lightweight macOS release.
