@@ -45,6 +45,9 @@ final class AppState: ObservableObject {
     @Published var showSettings = false
     @Published var showRuntimeAssistant = false
     @Published var runtimeInstallerMessage = ""
+    @Published var runtimeInstallProgress = 0.0
+    @Published var runtimeInstallLine = "等待安装"
+    @Published var isInstallingRuntime = false
     @Published var openOutputDirectoryWhenDone = false
 
     let locator = FFmpegLocator()
@@ -102,36 +105,104 @@ final class AppState: ObservableObject {
     func presentRuntimeAssistantIfNeeded() {
         guard ffmpeg == nil || ffprobe == nil else { return }
         runtimeInstallerMessage = ""
+        runtimeInstallLine = "等待安装"
+        runtimeInstallProgress = 0
         showRuntimeAssistant = true
     }
 
     func recheckRuntime() {
         if ffmpeg != nil, ffprobe != nil {
             runtimeInstallerMessage = "已检测到 FFmpeg 运行环境"
+            runtimeInstallLine = "FFmpeg 运行环境已就绪"
+            runtimeInstallProgress = 1
             statusMessage = "已检测到 FFmpeg"
         } else {
             runtimeInstallerMessage = "仍未检测到完整 FFmpeg 运行环境"
+            runtimeInstallLine = "仍未检测到完整 FFmpeg 运行环境"
             statusMessage = "未检测到 FFmpeg。请安装运行环境后重试。"
         }
         objectWillChange.send()
     }
 
     func installRuntimeWithHomebrew() {
+        guard !isInstallingRuntime else { return }
+
         do {
             let scriptURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("Install-FFmpeg-Runtime.command")
             try RuntimeInstaller.homebrewInstallScript().write(to: scriptURL, atomically: true, encoding: .utf8)
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptURL.path)
-            NSWorkspace.shared.open(scriptURL)
-            runtimeInstallerMessage = "已打开终端安装器。安装完成后回到这里点击重新检测。"
+
+            isInstallingRuntime = true
+            runtimeInstallProgress = 0.05
+            runtimeInstallLine = "准备安装运行环境"
+            runtimeInstallerMessage = "安装过程中请保持网络连接；如果系统要求认证，请输入本机密码或使用 Touch ID。"
+
+            Task { [weak self, scriptURL] in
+                do {
+                    let exitCode = try await RuntimeProcessRunner.run(scriptURL: scriptURL) { [weak self] line in
+                        Task { @MainActor [weak self] in
+                            self?.consumeRuntimeInstallLine(line)
+                        }
+                    }
+                    await MainActor.run { [weak self] in
+                        self?.finishRuntimeInstallation(exitCode: exitCode)
+                    }
+                } catch {
+                    await MainActor.run { [weak self] in
+                        self?.finishRuntimeInstallation(error: error)
+                    }
+                }
+            }
         } catch {
             runtimeInstallerMessage = "无法创建安装器：\(error.localizedDescription)"
+            runtimeInstallLine = "安装器创建失败"
         }
     }
 
     func openHomebrewWebsite() {
         guard let url = URL(string: "https://brew.sh") else { return }
         NSWorkspace.shared.open(url)
+    }
+
+    private func consumeRuntimeInstallLine(_ line: String) {
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        if let progress = RuntimeInstaller.parseProgressLine(trimmed) {
+            runtimeInstallProgress = progress.fraction
+            runtimeInstallLine = progress.message
+            return
+        }
+
+        runtimeInstallLine = trimmed
+    }
+
+    private func finishRuntimeInstallation(exitCode: Int32) {
+        isInstallingRuntime = false
+        if exitCode == 0, ffmpeg != nil, ffprobe != nil {
+            runtimeInstallProgress = 1
+            runtimeInstallLine = "FFmpeg 运行环境安装完成"
+            runtimeInstallerMessage = "已检测到 FFmpeg 和 FFprobe，可以开始转换。"
+            statusMessage = "已检测到 FFmpeg"
+        } else if exitCode == 0 {
+            runtimeInstallProgress = max(runtimeInstallProgress, 0.95)
+            runtimeInstallLine = "安装完成但验证未通过"
+            runtimeInstallerMessage = "安装命令已结束，但 app 仍未检测到 FFmpeg 或 FFprobe。请重新检测或重启 app。"
+            statusMessage = "未检测到完整 FFmpeg 运行环境"
+        } else {
+            runtimeInstallLine = "安装失败"
+            runtimeInstallerMessage = "安装进程退出码：\(exitCode)。请检查网络、管理员认证或 Homebrew 输出。"
+            statusMessage = "FFmpeg 运行环境安装失败"
+        }
+        objectWillChange.send()
+    }
+
+    private func finishRuntimeInstallation(error: Error) {
+        isInstallingRuntime = false
+        runtimeInstallLine = "安装失败"
+        runtimeInstallerMessage = "无法启动安装进程：\(error.localizedDescription)"
+        statusMessage = "FFmpeg 运行环境安装失败"
     }
 
     func text(_ key: String) -> String {
@@ -459,6 +530,7 @@ final class AppState: ObservableObject {
         "homebrew": "Homebrew",
         "runtime_missing_hint": "转换需要 FFmpeg 和 FFprobe。可以使用 Homebrew 下载并安装完整运行环境。",
         "runtime_space_hint": "建议预留至少 1GB 空间；实际常见占用约 350MB 到 700MB，取决于依赖和缓存。",
+        "runtime_install_full": "安装 Homebrew + FFmpeg",
         "runtime_install_homebrew": "用 Homebrew 安装",
         "runtime_open_homebrew": "打开 Homebrew",
         "runtime_recheck": "重新检测"
@@ -528,6 +600,7 @@ final class AppState: ObservableObject {
         "homebrew": "Homebrew",
         "runtime_missing_hint": "Conversion needs FFmpeg and FFprobe. Homebrew can download and install the complete runtime.",
         "runtime_space_hint": "Keep at least 1 GB free. Typical usage is about 350 MB to 700 MB depending on dependencies and cache.",
+        "runtime_install_full": "Install Homebrew + FFmpeg",
         "runtime_install_homebrew": "Install with Homebrew",
         "runtime_open_homebrew": "Open Homebrew",
         "runtime_recheck": "Recheck"

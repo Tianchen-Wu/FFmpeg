@@ -4,7 +4,7 @@ Lightweight macOS GUI wrapper for local FFmpeg media conversion.
 
 ## Current Version
 
-`0.1.1`
+`0.1.2`
 
 ## Features
 
@@ -16,7 +16,8 @@ Lightweight macOS GUI wrapper for local FFmpeg media conversion.
 - Default output beside the source file
 - Optional unified output folder
 - Readable errors and saved FFmpeg logs
-- Startup FFmpeg runtime detection and Homebrew install assistant
+- Startup FFmpeg runtime detection
+- In-app Homebrew + FFmpeg install assistant with progress
 - Chinese / English UI switch
 
 ## Requirements
@@ -34,7 +35,7 @@ The app auto-detects existing runtime paths:
 - `/opt/homebrew/bin/ffmpeg`
 - `/opt/homebrew/bin/ffprobe`
 
-If FFmpeg or FFprobe is missing, the app opens a runtime assistant. The assistant can launch a Terminal installer that runs `brew install ffmpeg`.
+If FFmpeg or FFprobe is missing, the app opens a runtime assistant. The assistant can install Homebrew when needed, install FFmpeg through Homebrew, show a stage progress bar, and verify `ffmpeg` / `ffprobe` before conversion.
 
 ## Build
 
@@ -57,7 +58,7 @@ scripts/package_dmg.sh
 Output:
 
 ```text
-dist/FFmpeg-0.1.1-arm64.dmg
+dist/FFmpeg-0.1.2-arm64.dmg
 ```
 
 ## Package Installer
@@ -69,7 +70,7 @@ scripts/package_pkg.sh
 Output:
 
 ```text
-dist/FFmpeg-0.1.1-arm64.pkg
+dist/FFmpeg-0.1.2-arm64.pkg
 ```
 
 The `.pkg` installer places `FFmpeg.app` in `/Applications`.

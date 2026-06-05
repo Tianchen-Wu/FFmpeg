@@ -1,3 +1,20 @@
+# FFmpeg 0.1.2
+
+One-click runtime install release.
+
+## Added
+
+- In-app Homebrew + FFmpeg installation flow
+- Stage progress bar for runtime setup
+- Single-line live installer status
+- Automatic `ffmpeg` / `ffprobe` verification after install
+
+## Notes
+
+- If Homebrew is missing on Apple Silicon, the app may ask macOS for administrator authentication to prepare `/opt/homebrew`.
+- Homebrew and FFmpeg installation still require network access.
+- Xcode Command Line Tools prompts may still appear on clean macOS systems because Apple controls that installation flow.
+
 # FFmpeg 0.1.1
 
 Runtime setup release.

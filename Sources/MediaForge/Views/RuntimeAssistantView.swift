@@ -11,6 +11,7 @@ struct RuntimeAssistantView: View {
             Divider()
             statusBlock
             installBlock
+            progressBlock
             if !appState.runtimeInstallerMessage.isEmpty {
                 Text(appState.runtimeInstallerMessage)
                     .font(.caption)
@@ -37,6 +38,7 @@ struct RuntimeAssistantView: View {
                 Label(appState.text("close"), systemImage: "xmark")
             }
             .labelStyle(.titleAndIcon)
+            .disabled(appState.isInstallingRuntime)
         }
     }
 
@@ -65,20 +67,34 @@ struct RuntimeAssistantView: View {
         }
     }
 
+    private var progressBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ProgressView(value: appState.runtimeInstallProgress)
+            Text(appState.runtimeInstallLine)
+                .font(.caption.monospaced())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
+        }
+    }
+
     private var buttons: some View {
         HStack(spacing: 10) {
             Button {
                 appState.installRuntimeWithHomebrew()
             } label: {
-                Label(appState.text("runtime_install_homebrew"), systemImage: "terminal")
+                Label(appState.text("runtime_install_full"), systemImage: "arrow.down.circle")
             }
             .buttonStyle(.borderedProminent)
+            .disabled(appState.isInstallingRuntime || (appState.ffmpeg != nil && appState.ffprobe != nil))
 
             Button {
                 appState.openHomebrewWebsite()
             } label: {
                 Label(appState.text("runtime_open_homebrew"), systemImage: "safari")
             }
+            .disabled(appState.isInstallingRuntime)
 
             Spacer()
 
@@ -87,6 +103,7 @@ struct RuntimeAssistantView: View {
             } label: {
                 Label(appState.text("runtime_recheck"), systemImage: "arrow.clockwise")
             }
+            .disabled(appState.isInstallingRuntime)
         }
     }
 }
