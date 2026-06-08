@@ -4,7 +4,7 @@ Lightweight macOS GUI wrapper for local FFmpeg media conversion.
 
 ## Current Version
 
-`0.1.2`
+`0.1.3`
 
 ## Features
 
@@ -17,6 +17,7 @@ Lightweight macOS GUI wrapper for local FFmpeg media conversion.
 - Optional unified output folder
 - Readable errors and saved FFmpeg logs
 - Startup FFmpeg runtime detection
+- Bundled FFmpeg / FFprobe runtime for one-step installation
 - In-app Homebrew + FFmpeg install assistant with progress
 - Chinese / English UI switch
 
@@ -24,18 +25,25 @@ Lightweight macOS GUI wrapper for local FFmpeg media conversion.
 
 - Apple Silicon Mac
 - macOS 13 Ventura or newer
-- Existing FFmpeg installation, or Homebrew for the runtime install assistant:
+
+Release packages include FFmpeg and FFprobe inside the app bundle. Users do not need to install Homebrew or FFmpeg before using the app.
+
+The app auto-detects runtime paths in this order:
+
+- `FFmpeg.app/Contents/Resources/Runtime/ffmpeg/bin/ffmpeg`
+- `FFmpeg.app/Contents/Resources/Runtime/ffmpeg/bin/ffprobe`
+- `/opt/homebrew/bin/ffmpeg`
+- `/opt/homebrew/bin/ffprobe`
+
+If every runtime source is missing, the app opens a runtime assistant as a fallback. The assistant can install Homebrew when needed, install FFmpeg through Homebrew, show a stage progress bar, and verify `ffmpeg` / `ffprobe` before conversion.
+
+## Build Requirements
+
+Packaging a release with bundled FFmpeg requires Homebrew FFmpeg on the build Mac:
 
 ```bash
 brew install ffmpeg
 ```
-
-The app auto-detects existing runtime paths:
-
-- `/opt/homebrew/bin/ffmpeg`
-- `/opt/homebrew/bin/ffprobe`
-
-If FFmpeg or FFprobe is missing, the app opens a runtime assistant. The assistant can install Homebrew when needed, install FFmpeg through Homebrew, show a stage progress bar, and verify `ffmpeg` / `ffprobe` before conversion.
 
 ## Build
 
@@ -58,7 +66,7 @@ scripts/package_dmg.sh
 Output:
 
 ```text
-dist/FFmpeg-0.1.2-arm64.dmg
+dist/FFmpeg-0.1.3-arm64.dmg
 ```
 
 ## Package Installer
@@ -70,7 +78,7 @@ scripts/package_pkg.sh
 Output:
 
 ```text
-dist/FFmpeg-0.1.2-arm64.pkg
+dist/FFmpeg-0.1.3-arm64.pkg
 ```
 
 The `.pkg` installer places `FFmpeg.app` in `/Applications`.
@@ -78,5 +86,7 @@ The `.pkg` installer places `FFmpeg.app` in `/Applications`.
 ## Distribution Note
 
 This MVP package is ad-hoc signed but not Apple notarized. On another Mac, Gatekeeper may require right-clicking the app and choosing Open on first launch. A future public distribution build should use Developer ID signing and Apple notarization.
+
+The app bundles FFmpeg binaries assembled from Homebrew FFmpeg on the build Mac. Bundled FFmpeg license files and source-offer notes are placed under `FFmpeg.app/Contents/Resources/Runtime/ffmpeg/LICENSES`.
 
 Apps distributed outside the Mac App Store usually do not show the Launchpad long-press delete `x`. To uninstall, remove `FFmpeg.app` from `/Applications`.

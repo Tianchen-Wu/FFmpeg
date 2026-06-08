@@ -1,3 +1,20 @@
+# FFmpeg 0.1.3
+
+Bundled runtime release.
+
+## Added
+
+- Bundled FFmpeg / FFprobe runtime inside the macOS app package
+- Runtime packaging script that collects linked Homebrew dylibs and rewrites them to app-relative `@rpath` references
+- App runtime lookup now prefers `Contents/Resources/Runtime/ffmpeg/bin` before system or Homebrew paths
+- Bundled FFmpeg license files and source-offer note
+
+## Notes
+
+- Users no longer need Homebrew or a preinstalled FFmpeg runtime for normal use.
+- The Homebrew install assistant remains as a fallback if the bundled runtime is removed or unavailable.
+- The bundled runtime is assembled from the builder Mac's Homebrew FFmpeg and is GPL-enabled because the selected FFmpeg build includes GPL codecs such as x264/x265.
+
 # FFmpeg 0.1.2
 
 One-click runtime install release.
